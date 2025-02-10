@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>3D Navigation App</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.125/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.125/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      font-family: Arial, sans-serif;
+    }
+    #cesiumContainer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    #navigationPanel {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      width: 300px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      z-index: 20;
+    }
+    #settingsMenu {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      width: 200px;
+      background-color: rgba(255, 255, 255, 0.9);
+      padding: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+      z-index: 20;
+    }
+    h4 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    input[type="text"], button {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <div id="navigationPanel">
+    <h4>Navigation</h4>
+    <label for="startLocation">Starting Location:</label>
+    <input type="text" id="startLocation" placeholder="Enter starting point">
+    <label for="destination">Destination:</label>
+    <input type="text" id="destination" placeholder="Enter destination">
+    <button id="searchRoute">Search</button>
+  </div>
+  <div id="settingsMenu">
+    <h4>Settings</h4>
+    <label><input type="checkbox" id="toggleTracking"> Enable Real-Time Tracking</label><br>
+    <label><input type="checkbox" id="toggleTraffic"> Show Traffic Layer</label><br>
+    <label><input type="radio" name="cameraMode" value="firstPerson"> First-Person View</label><br>
+    <label><input type="radio" name="cameraMode" value="thirdPerson" checked> Third-Person View</label><br>
+  </div>
+  <script type="module">
+    // Your access token can be found at: https://ion.cesium.com/tokens.
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIwZmVlYTIwNC1hNDg5LTRlNGMtYmZmYi03N2IyMDQ0ZmY2ODUiLCJpZCI6MTAzOTM4LCJpYXQiOjE2NTk5MTgxNDd9.I0QanzhoBqTmXdwIy9EYPgBNXAOU2ut2bXyGX_uxvRI';
+
+    // Initialize the Cesium Viewer in the HTML element with the `cesiumContainer` ID.
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrain: Cesium.Terrain.fromWorldTerrain(),
+    });
+
+    // Fly the camera to San Francisco at the given longitude, latitude, and height.
+    viewer.camera.flyTo({
+      destination: Cesium.Cartesian3.fromDegrees(-122.4175, 37.655, 400),
+      orientation: {
+        heading: Cesium.Math.toRadians(0.0),
+        pitch: Cesium.Math.toRadians(-15.0),
+      }
+    });
+
+    // Add Cesium OSM Buildings, a global 3D buildings layer.
+    const buildingTileset = await Cesium.createOsmBuildingsAsync();
+    viewer.scene.primitives.add(buildingTileset);
+
+    // Import and initialize navigation functionality
+    import { initializeNavigation } from './navigation.js';
+    initializeNavigation(viewer);
+
+    // Import and initialize POI markers
+    import { addPOIMarkers } from './poiHandler.js';
+    addPOIMarkers();
+
+    // Import and initialize settings menu
+    import { startLocationTracking, stopLocationTracking } from './tracking.js';
+    import { toggleTrafficLayer } from './layers.js';
+    import { enterFirstPersonMode, enterThirdPersonMode } from './cameraModes.js';
+
+    document.getElementById('toggleTracking').addEventListener('change', (event) => {
+      event.target.checked ? startLocationTracking() : stopLocationTracking();
+    });
+
+    document.getElementById('toggleTraffic').addEventListener('change', toggleTrafficLayer);
+
+    const cameraModeRadios = document.getElementsByName('cameraMode');
+    cameraModeRadios.forEach((radio) =>
+      radio.addEventListener('change', (event) => {
+        if (event.target.value === 'firstPerson') {
+          enterFirstPersonMode();
+        } else {
+          enterThirdPersonMode();
+        }
+      })
+    );
+  </script>
+</body>
+</html>
