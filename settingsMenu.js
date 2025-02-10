@@ -3,7 +3,6 @@ import { startLocationTracking, stopLocationTracking } from "./tracking.js";
 import { toggleTrafficLayer } from "./layers.js";
 import { enterFirstPersonMode, enterThirdPersonMode } from "./cameraModes.js";
 
-// Settings Menu
 const settingsMenu = document.createElement("div");
 settingsMenu.style.position = "absolute";
 settingsMenu.style.top = "10px";

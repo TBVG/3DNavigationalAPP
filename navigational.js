@@ -1,6 +1,6 @@
 // navigation.js
+import { viewer } from "./app.js";
 
-// Function to geocode a location to coordinates
 async function geocodeLocation(address) {
   const geocoder = new Cesium.BingMapsGeocoderService();
   const results = await geocoder.geocode(address);
@@ -10,12 +10,10 @@ async function geocodeLocation(address) {
   throw new Error(`Location "${address}" not found.`);
 }
 
-// Function to draw a route between two points
 function drawRoute(viewer, start, end) {
   const startPosition = Cesium.Cartesian3.fromDegrees(start.longitude, start.latitude);
   const endPosition = Cesium.Cartesian3.fromDegrees(end.longitude, end.latitude);
 
-  // Add line entity to represent the route
   viewer.entities.add({
     polyline: {
       positions: [startPosition, endPosition],
@@ -24,7 +22,6 @@ function drawRoute(viewer, start, end) {
     },
   });
 
-  // Fly to the route
   viewer.camera.flyTo({
     destination: Cesium.Cartesian3.fromDegrees(
       (start.longitude + end.longitude) / 2,
@@ -34,7 +31,6 @@ function drawRoute(viewer, start, end) {
   });
 }
 
-// Initialize navigation functionality
 function initializeNavigation(viewer) {
   document.getElementById("searchRoute").addEventListener("click", async () => {
     const startLocation = document.getElementById("startLocation").value;
@@ -46,11 +42,8 @@ function initializeNavigation(viewer) {
     }
 
     try {
-      // Geocode both locations
       const startCoords = await geocodeLocation(startLocation);
       const endCoords = await geocodeLocation(destination);
-
-      // Draw the route on the map
       drawRoute(viewer, startCoords, endCoords);
     } catch (error) {
       console.error(error);

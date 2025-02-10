@@ -1,7 +1,6 @@
 // poiHandler.js
 import { viewer } from "./app.js";
 
-// Add POI Markers
 function addPOIMarkers() {
   const poiData = [
     { name: "Golden Gate Bridge", position: [-122.4783, 37.8199], description: "Famous suspension bridge in San Francisco." },
